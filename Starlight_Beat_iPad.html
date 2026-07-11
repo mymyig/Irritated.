@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta name=viewport content='width=device-width,initial-scale=1'><style>
+body{margin:0;background:#0b1020;color:white;font-family:Arial;text-align:center}canvas{display:block;margin:auto;touch-action:none;background:linear-gradient(#1b1740,#090b18)}
+</style></head><body><h2>Starlight Beat</h2><canvas id=c width=400 height=700></canvas><div id=ui>Tap lanes when notes reach the line.</div>
+<script>
+const cv=c,ctx=cv.getContext('2d'),L=4,W=100,H=700,J=620,S=260;
+let score=0,combo=0,start,parts=[];
+const chart=[];for(let i=0;i<80;i++){chart.push({l:Math.floor(Math.random()*4),t:1000+i*320,h:false});}
+function hit(x){const r=cv.getBoundingClientRect(),lane=Math.min(3,Math.floor(((x-r.left)*400/r.width)/W));const now=performance.now()-start;
+let best=null,bd=999;for(const n of chart){if(n.h||n.l!=lane)continue;let d=Math.abs(n.t-now);if(d<bd){bd=d;best=n}}
+if(best&&bd<160){best.h=true;score+=bd<60?1000:600;combo++;for(let i=0;i<10;i++)parts.push({x:lane*W+50,y:J,vx:(Math.random()-.5)*4,vy:-Math.random()*4,a:1});}else combo=0;}
+cv.onpointerdown=e=>hit(e.clientX);
+function f(ts){if(!start)start=ts;let now=ts-start;ctx.clearRect(0,0,400,700);
+for(let i=0;i<4;i++){ctx.fillStyle="rgba(255,255,255,.05)";ctx.fillRect(i*W,0,W-2,H)}
+ctx.fillStyle="#6ff";ctx.fillRect(0,J,400,4);
+for(const n of chart){if(n.h)continue;let y=(now-n.t)/1000*S+40;if(y>-30&&y<730){ctx.fillStyle=["#ff6bd6","#7cf7ff","#ffe36b","#7dff90"][n.l];ctx.fillRect(n.l*W+15,y,70,18)}}
+for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.a-=.02;ctx.globalAlpha=Math.max(0,p.a);ctx.fillStyle="#fff";ctx.fillRect(p.x,p.y,3,3);ctx.globalAlpha=1}
+parts=parts.filter(p=>p.a>0);
+ui.textContent=`Score ${score} | Combo ${combo}`;
+requestAnimationFrame(f)}
+requestAnimationFrame(f);
+</script></body></html>
